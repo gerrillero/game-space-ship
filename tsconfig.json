@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "es2015",
+        "target": "es5",
+        "removeComments": true,
+        "outDir": "./js",
+        "rootDir": "./", 
+        "sourceMap": false,
+        "declaration": false,
+        "moduleResolution": "node",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
+    }
+}
