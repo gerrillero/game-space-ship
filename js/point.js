@@ -1,8 +1,6 @@
-var Point = (function () {
-    function Point(x, y) {
+export class Point {
+    constructor(x, y) {
         this.x = x;
         this.y = y;
     }
-    return Point;
-}());
-export { Point };
+}

@@ -6,6 +6,7 @@ import { Projectile } from './projectile.js';
 export class Game {
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
+    requestAnimateId: number;
     player: Player;
     projectiles: Projectile[] = [];
     enemies: Enemy[] = [];
@@ -46,16 +47,21 @@ export class Game {
     }
 
     animate() {
-        requestAnimationFrame(this.animate.bind(this));
+        this.requestAnimateId = requestAnimationFrame(this.animate.bind(this));
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.player.draw();
 
-        this.projectiles.forEach(projectile => {
+        this.projectiles.forEach((projectile, index) => {
             projectile.update();
+
+            this.removeProjectiles(projectile, index);
+
         });
 
-        this.enemies.forEach(enemy => {
+        this.enemies.forEach((enemy, index) => {
             enemy.update();
+
+            this.detectCollisions(enemy, index);
         });
     }
 
@@ -63,5 +69,34 @@ export class Game {
         setInterval(() => {
             this.createEnemy();
         }, 1000)
+    }
+
+    private removeProjectiles(projectile: Projectile, index: number) {
+        if (projectile.x + projectile.radius < 0 ||
+            projectile.x - projectile.radius > this.canvas.width ||
+            projectile.y + projectile.radius < 0 ||
+            projectile.y - projectile.radius > this.canvas.height)
+            this.projectiles.splice(index, 1);
+    }
+
+    private detectCollisions(enemy: Enemy, index: number) {
+
+        // detect collision with the player
+        const distance = Math.hypot(this.player.x - enemy.x, this.player.y - enemy.y);
+        if (distance - enemy.radius - this.player.radius < 1) {
+            cancelAnimationFrame(this.requestAnimateId);
+        }
+
+        // detect collision with the projectiles
+        this.projectiles.forEach((projectile, projectileIndex) => {
+            const distance = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
+
+            if (distance - enemy.radius - projectile.radius < 1) {
+                setTimeout(() => {
+                    this.enemies.splice(index, 1);
+                    this.projectiles.splice(projectileIndex, 1);
+                }, 0);
+            }
+        });
     }
 }
