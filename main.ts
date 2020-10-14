@@ -6,5 +6,6 @@ const game = new Game(canvas);
 
 game.createPlayer('blue');
 game.animate();
+game.spawEnemies();
 
 window.addEventListener('click', (event) => { game.createProjectile(event); });
