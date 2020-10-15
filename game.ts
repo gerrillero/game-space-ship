@@ -1,7 +1,10 @@
+
 import { Enemy } from './enemy.js';
 import { Player } from './player.js';
 import { Point } from './point.js';
 import { Projectile } from './projectile.js';
+
+declare var gsap: any;
 
 export class Game {
     canvas: HTMLCanvasElement;
@@ -99,10 +102,19 @@ export class Game {
             const distance = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
 
             if (distance - enemy.radius - projectile.radius < 1) {
-                setTimeout(() => {
-                    this.enemies.splice(index, 1);
-                    this.projectiles.splice(projectileIndex, 1);
-                }, 0);
+
+                if (enemy.radius - 10 > 5) {
+                    gsap.to(enemy, { radius: enemy.radius - 10 });
+                    enemy.radius -= 10;
+                    setTimeout(() => {
+                        this.projectiles.splice(projectileIndex, 1);
+                    }, 0);
+                } else {
+                    setTimeout(() => {
+                        this.enemies.splice(index, 1);
+                        this.projectiles.splice(projectileIndex, 1);
+                    }, 0);
+                }
             }
         });
     }
