@@ -18,18 +18,19 @@ export class Game {
         this.context = canvas.getContext('2d');
     }
 
-    createPlayer(color: string) {
-        this.player = new Player(this.context, this.canvas.width / 2, this.canvas.height / 2, 30, color)
+    createPlayer(color: string, size: number) {
+        this.player = new Player(this.context, this.canvas.width / 2, this.canvas.height / 2, size, color)
     }
 
-    createProjectile(event: MouseEvent) {
+    createProjectile(event: MouseEvent, color: string) {
+        const multiplyVelocty: number = 5;
         const angle = Math.atan2(event.clientY - this.canvas.height / 2, event.clientX - this.canvas.width / 2);
-        const velocity = new Point(Math.cos(angle), Math.sin(angle));
-        this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, 'red'));
+        const velocity = new Point(Math.cos(angle) * multiplyVelocty, Math.sin(angle) * multiplyVelocty);
+        this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, color));
     }
 
     createEnemy() {
-        const color = 'green'
+        const color = `hsl(${Math.random() * 360}, 50%, 50%)`; // randomize enemies color.
         const radius = Math.random() * (30 - 10) + 10;
 
         let x: number;
@@ -48,7 +49,13 @@ export class Game {
 
     animate() {
         this.requestAnimateId = requestAnimationFrame(this.animate.bind(this));
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // clearRect make a white background
+        //this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // So, we do with fillRect and fillStyle with opacity to get a moving/speed efect.
+        this.context.fillStyle = 'rgba(0,0,0,0.1';
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.player.draw();
 
         this.projectiles.forEach((projectile, index) => {

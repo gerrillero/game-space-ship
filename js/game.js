@@ -11,16 +11,17 @@ export class Game {
         this.canvas.height = innerHeight;
         this.context = canvas.getContext('2d');
     }
-    createPlayer(color) {
-        this.player = new Player(this.context, this.canvas.width / 2, this.canvas.height / 2, 30, color);
+    createPlayer(color, size) {
+        this.player = new Player(this.context, this.canvas.width / 2, this.canvas.height / 2, size, color);
     }
-    createProjectile(event) {
+    createProjectile(event, color) {
+        const multiplyVelocty = 5;
         const angle = Math.atan2(event.clientY - this.canvas.height / 2, event.clientX - this.canvas.width / 2);
-        const velocity = new Point(Math.cos(angle), Math.sin(angle));
-        this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, 'red'));
+        const velocity = new Point(Math.cos(angle) * multiplyVelocty, Math.sin(angle) * multiplyVelocty);
+        this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, color));
     }
     createEnemy() {
-        const color = 'green';
+        const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
         const radius = Math.random() * (30 - 10) + 10;
         let x;
         let y;
@@ -38,7 +39,8 @@ export class Game {
     }
     animate() {
         this.requestAnimateId = requestAnimationFrame(this.animate.bind(this));
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.context.fillStyle = 'rgba(0,0,0,0.1';
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.player.draw();
         this.projectiles.forEach((projectile, index) => {
             projectile.update();
