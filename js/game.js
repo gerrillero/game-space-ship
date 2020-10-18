@@ -1,10 +1,12 @@
 import { Enemy } from './enemy.js';
+import { Particle } from './particle.js';
 import { Player } from './player.js';
 import { Point } from './point.js';
 import { Projectile } from './projectile.js';
 export class Game {
     constructor(canvas) {
         this.projectiles = [];
+        this.particles = [];
         this.enemies = [];
         this.canvas = canvas;
         this.canvas.width = innerWidth;
@@ -13,12 +15,6 @@ export class Game {
     }
     createPlayer(color, size) {
         this.player = new Player(this.context, this.canvas.width / 2, this.canvas.height / 2, size, color);
-    }
-    createProjectile(event, color) {
-        const multiplyVelocty = 5;
-        const angle = Math.atan2(event.clientY - this.canvas.height / 2, event.clientX - this.canvas.width / 2);
-        const velocity = new Point(Math.cos(angle) * multiplyVelocty, Math.sin(angle) * multiplyVelocty);
-        this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, color));
     }
     createEnemy() {
         const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
@@ -37,6 +33,12 @@ export class Game {
         const velocity = new Point(Math.cos(angle), Math.sin(angle));
         this.enemies.push(new Enemy(this.context, x, y, radius, velocity, color));
     }
+    addProjectile(event, color) {
+        const multiplyVelocty = 5;
+        const angle = Math.atan2(event.clientY - this.canvas.height / 2, event.clientX - this.canvas.width / 2);
+        const velocity = new Point(Math.cos(angle) * multiplyVelocty, Math.sin(angle) * multiplyVelocty);
+        this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, color));
+    }
     animate() {
         this.requestAnimateId = requestAnimationFrame(this.animate.bind(this));
         this.context.fillStyle = 'rgba(0,0,0,0.1';
@@ -49,6 +51,12 @@ export class Game {
         this.enemies.forEach((enemy, index) => {
             enemy.update();
             this.detectCollisions(enemy, index);
+        });
+        this.particles.forEach((particle, index) => {
+            if (particle.alpha <= 0)
+                this.particles.splice(index, 1);
+            else
+                particle.update();
         });
     }
     spawEnemies() {
@@ -71,6 +79,9 @@ export class Game {
         this.projectiles.forEach((projectile, projectileIndex) => {
             const distance = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
             if (distance - enemy.radius - projectile.radius < 1) {
+                for (let i = 0; i < 8; i++) {
+                    this.particles.push(this.createParticle(projectile, enemy));
+                }
                 if (enemy.radius - 10 > 5) {
                     gsap.to(enemy, { radius: enemy.radius - 10 });
                     enemy.radius -= 10;
@@ -86,5 +97,8 @@ export class Game {
                 }
             }
         });
+    }
+    createParticle(projectile, enemy) {
+        return new Particle(this.context, projectile.x, projectile.y, 3, new Point((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6), enemy.color);
     }
 }

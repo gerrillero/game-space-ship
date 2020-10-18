@@ -9,4 +9,4 @@ game.createPlayer(playerColor, 10);
 game.animate();
 game.spawEnemies();
 
-window.addEventListener('click', (event) => { game.createProjectile(event, playerColor); });
+window.addEventListener('click', (event) => { game.addProjectile(event, playerColor); });
