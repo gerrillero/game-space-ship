@@ -4,11 +4,13 @@ import { Player } from './player.js';
 import { Point } from './point.js';
 import { Projectile } from './projectile.js';
 export class Game {
-    constructor(canvas) {
+    constructor(canvas, scoreCountElement) {
+        this.canvas = canvas;
+        this.scoreCountElement = scoreCountElement;
+        this.score = 0;
         this.projectiles = [];
         this.particles = [];
         this.enemies = [];
-        this.canvas = canvas;
         this.canvas.width = innerWidth;
         this.canvas.height = innerHeight;
         this.context = canvas.getContext('2d');
@@ -83,6 +85,9 @@ export class Game {
                     this.particles.push(this.createParticle(projectile, enemy));
                 }
                 if (enemy.radius - 10 > 5) {
+                    this.score += 100;
+                    this.scoreCountElement.innerHTML = this.score.toString();
+                    ;
                     gsap.to(enemy, { radius: enemy.radius - 10 });
                     enemy.radius -= 10;
                     setTimeout(() => {
@@ -90,6 +95,9 @@ export class Game {
                     }, 0);
                 }
                 else {
+                    this.score += 250;
+                    this.scoreCountElement.innerHTML = this.score.toString();
+                    ;
                     setTimeout(() => {
                         this.enemies.splice(index, 1);
                         this.projectiles.splice(projectileIndex, 1);

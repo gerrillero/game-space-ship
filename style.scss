@@ -7,3 +7,12 @@ body {
     width: 100%;
     height: 100%;
 }
+
+.score {
+    background: none;
+    color: #FFF;
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    user-select: none;
+}

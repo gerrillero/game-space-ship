@@ -8,7 +8,7 @@ import { Projectile } from './projectile.js';
 declare var gsap: any;
 
 export class Game {
-    canvas: HTMLCanvasElement;
+    private score: number = 0;
     context: CanvasRenderingContext2D;
     requestAnimateId: number;
     player: Player;
@@ -16,8 +16,7 @@ export class Game {
     particles: Particle[] = [];
     enemies: Enemy[] = [];
 
-    constructor(canvas: HTMLCanvasElement) {
-        this.canvas = canvas;
+    constructor(private canvas: HTMLCanvasElement, private scoreCountElement: Element) {
         this.canvas.width = innerWidth;
         this.canvas.height = innerHeight
         this.context = canvas.getContext('2d');
@@ -117,12 +116,16 @@ export class Game {
                 }
 
                 if (enemy.radius - 10 > 5) {
+                    this.score += 100;
+                    this.scoreCountElement.innerHTML = this.score.toString();;
                     gsap.to(enemy, { radius: enemy.radius - 10 });
                     enemy.radius -= 10;
                     setTimeout(() => {
                         this.projectiles.splice(projectileIndex, 1);
                     }, 0);
                 } else {
+                    this.score += 250;
+                    this.scoreCountElement.innerHTML = this.score.toString();;
                     setTimeout(() => {
                         this.enemies.splice(index, 1);
                         this.projectiles.splice(projectileIndex, 1);
