@@ -4,4 +4,7 @@ export class Player extends BaseElement {
         super(context, x, y, radius, color);
         this.context = context;
     }
+    update() {
+        this.draw();
+    }
 }

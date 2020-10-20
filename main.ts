@@ -1,13 +1,13 @@
-import { Player } from "./player.js";
+import { dialog, btnStart, playerColor, playerSize } from './constants.js';
 import { Game } from './game.js';
 
-const canvas = document.querySelector('canvas');
-const scoreCountElement = document.querySelector('#scoreCountElement');
-const playerColor: string = 'white';
-const game = new Game(canvas, scoreCountElement);
+const game = new Game();
 
-game.createPlayer(playerColor, 10);
-game.animate();
-game.spawEnemies();
+btnStart.addEventListener('click', () => {
+    game.init(playerColor, playerSize);
+    dialog.style.display = 'none';
 
-window.addEventListener('click', (event) => { game.addProjectile(event, playerColor); });
+    window.addEventListener('mousemove', (event) => { game.setCoordenades(event) });
+    window.addEventListener('click', () => { game.addProjectile(); });
+    //window.addEventListener('keydown', (event) => { game.keyDown(event) });
+});
