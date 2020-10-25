@@ -17,6 +17,8 @@ export class Game {
     enemies: Enemy[] = [];
     windowX: number;
     windowY: number;
+    gameKeys = new Set<string>();
+    shootDirection: number;
 
     constructor() {
         canvas.width = innerWidth;
@@ -27,7 +29,8 @@ export class Game {
     setCoordenades(event: MouseEvent) {
         this.windowX = event.clientX;
         this.windowY = event.clientY;
-        console.log(this.windowX);
+        console.log('x: ', this.windowX);
+        console.log('y: ', this.windowY);
     }
 
     init(colorPlayer: string, sizePlayer: number) {
@@ -37,38 +40,21 @@ export class Game {
         this.spawEnemies();
     }
 
-    // keyDown(event: KeyboardEvent) {
-    //     console.log('key: ', event.key);
-    //     console.log('event', event)
-    //     switch (event.key) {
-    //         case ' ': // Space key.
-    //             this.addProjectile();
-    //             break;
-    //         case 'Enter':
-    //             this.init(playerColor, playerSize);
-    //             break;
-    //         case 'ArrowUp':
-    //             this.player.velocity = new Point(0, -2);
-    //             break;
-    //         case 'ArrowDown':
-    //             this.player.velocity = new Point(0, 2);
-    //             break;
-    //         case 'ArrowLeft':
-    //             this.player.velocity = new Point(-2, 0);
-    //             break;
-    //         case 'ArrowRight':
-    //             this.player.velocity = new Point(2, 0);
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
+    keyUp(event: KeyboardEvent) {
+        this.gameKeys.delete(event.key);
+        console.log('gameskeys: ', this.gameKeys);
+    }
+
+    keyDown(event: KeyboardEvent) {
+        this.gameKeys.add(event.key);
+        console.log('gameskeys: ', this.gameKeys);
+    }
 
     addProjectile() {
         shootSound.stop();
         const multiplyVelocty: number = 5;
-        const angle = Math.atan2(this.windowY - canvas.height / 2, this.windowX - canvas.width / 2);
-        const velocity = new Point(Math.cos(angle) * multiplyVelocty, Math.sin(angle) * multiplyVelocty);
+        //const angle = Math.atan2(this.windowY - canvas.height / 2, this.windowX - canvas.width / 2);
+        const velocity = new Point(Math.cos(this.shootDirection) * multiplyVelocty, Math.sin(this.shootDirection) * multiplyVelocty);
         this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, playerColor));
         shootSound.play();
     }
@@ -83,6 +69,7 @@ export class Game {
 
     private createPlayer(color: string, size: number) {
         this.player = new Player(this.context, canvas.width / 2, canvas.height / 2, size, color)
+        this.shootDirection = -90 * Math.PI / 180;
     }
 
     private createEnemy() {
@@ -99,12 +86,14 @@ export class Game {
             y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
         }
 
-        const angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x);
+        const angle = Math.atan2(this.player.y - y, this.player.x - x);
         const velocity = new Point(Math.cos(angle), Math.sin(angle));
         this.enemies.push(new Enemy(this.context, x, y, radius, velocity, color));
     }
 
     private animate() {
+
+        this.checkKeys();
         this.requestAnimateId = requestAnimationFrame(this.animate.bind(this));
 
         // clearRect make a white background
@@ -134,6 +123,49 @@ export class Game {
             else
                 particle.update();
         });
+    }
+
+    private checkKeys() {
+        const velocity = 2;
+        if (this.isDown('ArrowUp') || this.isDown('w')) {
+            this.player.y -= velocity;
+            this.shootDirection = -90 * Math.PI / 180;
+        }
+        if (this.isDown('ArrowDown') || this.isDown('s')) {
+            this.player.y += velocity;
+            this.shootDirection = 90 * Math.PI / 180;;
+        }
+        if (this.isDown('ArrowLeft') || this.isDown('a')) {
+            this.player.x -= velocity;
+            this.shootDirection = -180 * Math.PI / 180;;
+        }
+        if (this.isDown('ArrowRight') || this.isDown('d')) {
+            this.player.x += velocity;
+            this.shootDirection = 0 * Math.PI / 180;;
+        }
+
+        // check diagonal directions.
+        if ((this.isDown('ArrowUp') || this.isDown('w')) && (this.isDown('ArrowLeft') || this.isDown('a')))
+            this.shootDirection = -135 * Math.PI / 180;
+        if ((this.isDown('ArrowUp') || this.isDown('w')) && (this.isDown('ArrowRight') || this.isDown('d')))
+            this.shootDirection = -45 * Math.PI / 180;
+        if ((this.isDown('ArrowDown') || this.isDown('s')) && (this.isDown('ArrowLeft') || this.isDown('a')))
+            this.shootDirection = 135 * Math.PI / 180;
+        if ((this.isDown('ArrowDown') || this.isDown('s')) && (this.isDown('ArrowRight') || this.isDown('d')))
+            this.shootDirection = 45 * Math.PI / 180;
+
+        if (this.isDown(' '))
+            this.addProjectile();
+
+        if (this.isDown('Enter'))
+            this.init(playerColor, playerSize);
+
+        if (this.gameKeys.size === 0) this.player.velocity = new Point(0, 0);
+
+    }
+
+    private isDown(key: string): boolean {
+        return this.gameKeys.has(key);
     }
 
     private spawEnemies() {

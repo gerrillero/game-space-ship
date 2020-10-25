@@ -17,4 +17,5 @@ export class Sound {
         this.sound.pause();
         this.sound.currentTime = 0;
     }
+
 }

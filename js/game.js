@@ -1,4 +1,4 @@
-import { canvas, scoreCountElements, dialog, shootSound, explosionSound, playerColor } from './constants.js';
+import { canvas, scoreCountElements, dialog, shootSound, explosionSound, playerColor, playerSize } from './constants.js';
 import { Enemy } from './enemy.js';
 import { Particle } from './particle.js';
 import { Player } from './player.js';
@@ -10,6 +10,7 @@ export class Game {
         this.projectiles = [];
         this.particles = [];
         this.enemies = [];
+        this.gameKeys = new Set();
         canvas.width = innerWidth;
         canvas.height = innerHeight;
         this.context = canvas.getContext('2d');
@@ -17,7 +18,8 @@ export class Game {
     setCoordenades(event) {
         this.windowX = event.clientX;
         this.windowY = event.clientY;
-        console.log(this.windowX);
+        console.log('x: ', this.windowX);
+        console.log('y: ', this.windowY);
     }
     init(colorPlayer, sizePlayer) {
         this.reset();
@@ -25,11 +27,18 @@ export class Game {
         this.animate();
         this.spawEnemies();
     }
+    keyUp(event) {
+        this.gameKeys.delete(event.key);
+        console.log('gameskeys: ', this.gameKeys);
+    }
+    keyDown(event) {
+        this.gameKeys.add(event.key);
+        console.log('gameskeys: ', this.gameKeys);
+    }
     addProjectile() {
         shootSound.stop();
         const multiplyVelocty = 5;
-        const angle = Math.atan2(this.windowY - canvas.height / 2, this.windowX - canvas.width / 2);
-        const velocity = new Point(Math.cos(angle) * multiplyVelocty, Math.sin(angle) * multiplyVelocty);
+        const velocity = new Point(Math.cos(this.shootDirection) * multiplyVelocty, Math.sin(this.shootDirection) * multiplyVelocty);
         this.projectiles.push(new Projectile(this.context, this.player.x, this.player.y, 5, velocity, playerColor));
         shootSound.play();
     }
@@ -42,6 +51,7 @@ export class Game {
     }
     createPlayer(color, size) {
         this.player = new Player(this.context, canvas.width / 2, canvas.height / 2, size, color);
+        this.shootDirection = -90 * Math.PI / 180;
     }
     createEnemy() {
         const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
@@ -56,11 +66,12 @@ export class Game {
             x = Math.random() * canvas.width;
             y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
         }
-        const angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x);
+        const angle = Math.atan2(this.player.y - y, this.player.x - x);
         const velocity = new Point(Math.cos(angle), Math.sin(angle));
         this.enemies.push(new Enemy(this.context, x, y, radius, velocity, color));
     }
     animate() {
+        this.checkKeys();
         this.requestAnimateId = requestAnimationFrame(this.animate.bind(this));
         this.context.fillStyle = 'rgba(0,0,0,0.1';
         this.context.fillRect(0, 0, canvas.width, canvas.height);
@@ -79,6 +90,45 @@ export class Game {
             else
                 particle.update();
         });
+    }
+    checkKeys() {
+        const velocity = 2;
+        if (this.isDown('ArrowUp') || this.isDown('w')) {
+            this.player.y -= velocity;
+            this.shootDirection = -90 * Math.PI / 180;
+        }
+        if (this.isDown('ArrowDown') || this.isDown('s')) {
+            this.player.y += velocity;
+            this.shootDirection = 90 * Math.PI / 180;
+            ;
+        }
+        if (this.isDown('ArrowLeft') || this.isDown('a')) {
+            this.player.x -= velocity;
+            this.shootDirection = -180 * Math.PI / 180;
+            ;
+        }
+        if (this.isDown('ArrowRight') || this.isDown('d')) {
+            this.player.x += velocity;
+            this.shootDirection = 0 * Math.PI / 180;
+            ;
+        }
+        if ((this.isDown('ArrowUp') || this.isDown('w')) && (this.isDown('ArrowLeft') || this.isDown('a')))
+            this.shootDirection = -135 * Math.PI / 180;
+        if ((this.isDown('ArrowUp') || this.isDown('w')) && (this.isDown('ArrowRight') || this.isDown('d')))
+            this.shootDirection = -45 * Math.PI / 180;
+        if ((this.isDown('ArrowDown') || this.isDown('s')) && (this.isDown('ArrowLeft') || this.isDown('a')))
+            this.shootDirection = 135 * Math.PI / 180;
+        if ((this.isDown('ArrowDown') || this.isDown('s')) && (this.isDown('ArrowRight') || this.isDown('d')))
+            this.shootDirection = 45 * Math.PI / 180;
+        if (this.isDown(' '))
+            this.addProjectile();
+        if (this.isDown('Enter'))
+            this.init(playerColor, playerSize);
+        if (this.gameKeys.size === 0)
+            this.player.velocity = new Point(0, 0);
+    }
+    isDown(key) {
+        return this.gameKeys.has(key);
     }
     spawEnemies() {
         setInterval(() => {

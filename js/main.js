@@ -6,4 +6,6 @@ btnStart.addEventListener('click', () => {
     dialog.style.display = 'none';
     window.addEventListener('mousemove', (event) => { game.setCoordenades(event); });
     window.addEventListener('click', () => { game.addProjectile(); });
+    window.addEventListener('keydown', (event) => { game.keyDown(event); });
+    window.addEventListener('keyup', (event) => { game.keyUp(event); });
 });
